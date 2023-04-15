@@ -1,22 +1,25 @@
-using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using TaskMaster.Persistence;
+using TaskMaster.Profiles;
 using TaskMaster.Repositories;
+using TaskMaster.Services;
 using TaskMaster.Shared;
 
 namespace TaskMaster.Extensions;
 
 public static class ServiceExtensions
 {
-    public static IServiceCollection ConfigureServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.ConfigureTaskMasterDbContext(configuration);
-        services.AddScoped<DbContext, TaskMasterContext>()
-            .AddScoped(typeof(IRepository<,>), typeof(Repository<,>))
-            .AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddServices();
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+        services.AddAutoMapper(config =>
+        {
+            config.AddProfile<UserProfile>();
+        });
         return services;
     }
 
@@ -30,6 +33,16 @@ public static class ServiceExtensions
         {
             b.UseNpgsql(databaseSettings.ConnectionString);
         });
+
+        return services;
+    }
+
+    private static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddScoped<DbContext, TaskMasterContext>()
+            .AddScoped(typeof(IRepository<,>), typeof(Repository<,>))
+            .AddScoped<IUnitOfWork, UnitOfWork>()
+            .AddScoped<IUserService, UserService>();
 
         return services;
     }

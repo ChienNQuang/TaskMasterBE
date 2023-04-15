@@ -25,13 +25,13 @@ where TEntity : Entity<TKey>
         return entityEntry.Entity;
     }
 
-    public TEntity UpdateAsync(TEntity entity)
+    public TEntity Update(TEntity entity)
     {
         var entityEntry = _dbContext.Set<TEntity>().Update(entity);
         return entityEntry.Entity;
     }
 
-    public TEntity RemoveAsync(TKey id)
+    public TEntity Remove(TKey id)
     {
         var entity = GetByIdAsync(id).Result;
         var entityEntry = _dbContext.Set<TEntity>().Remove(entity!);

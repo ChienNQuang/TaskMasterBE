@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using Serilog;
 using TaskMaster.Extensions;
 using TaskMaster.Persistence;
@@ -10,7 +9,8 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-    builder.AddInfrastructure();
+    builder.Host.UseSerilog();
+    builder.Services.AddInfrastructure(builder.Configuration);
     var app = builder.Build();
     app.UseInfrastructure();
     app.MigrateDatabase<TaskMasterContext>((context, _) =>
@@ -22,7 +22,14 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "App closed unexpectedly");
+    var error = ex.GetType().Name;
+    if (error.Equals("HostAbortedException", StringComparison.Ordinal))
+    {
+        throw;
+    }
+        
+    Log.Fatal($"Unhandled exception1: {ex}");
+
 }
 finally
 {

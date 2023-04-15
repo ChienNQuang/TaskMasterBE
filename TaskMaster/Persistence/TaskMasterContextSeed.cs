@@ -88,6 +88,7 @@ public class TaskMasterContextSeed
             Status = TaskStatus.InProgress,
             User = getUsers().ElementAt(0),
             Project = getProjects().ElementAt(1),
+            Tag = TaskLabel.Bug
         },
         new()
         {
@@ -99,6 +100,7 @@ public class TaskMasterContextSeed
             Status = TaskStatus.OnHold,
             User = getUsers().ElementAt(1),
             Project = getProjects().ElementAt(1),
+            Tag = TaskLabel.Design
         }
     };
 }

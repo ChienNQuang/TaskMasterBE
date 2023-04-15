@@ -12,15 +12,13 @@ public static class HostExtensions
         var services = scope.ServiceProvider;
         var logger = services.GetRequiredService<ILogger<TContext>>();
         var context = services.GetService<TContext>();
-        
 
         try
         {
-            context?.Database.EnsureCreated();
             logger.LogInformation("Migrating database..");
-            ExecuteMigrations(context);
+            context?.Database.Migrate();
             logger.LogInformation("Migrated successfully");
-            InvokeSeeder(seeder!, context, services);
+            seeder(context!, services);
         }
         catch (Exception ex)
         {
@@ -28,18 +26,5 @@ public static class HostExtensions
         }
 
         return host;
-    }
-
-    private static void ExecuteMigrations<TContext>(TContext context)
-    where TContext : DbContext?
-    {
-        context?.Database.Migrate();
-    }
-
-    private static void InvokeSeeder<TContext>(Action<TContext, IServiceProvider> seeder, TContext context,
-        IServiceProvider services) 
-    where TContext : DbContext?
-    {
-        seeder(context, services);
     }
 }

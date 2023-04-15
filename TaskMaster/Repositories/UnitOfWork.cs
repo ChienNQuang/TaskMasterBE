@@ -11,7 +11,6 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(DbContext dbContext)
     {
         _dbContext = dbContext;
-        _dbContext.Database.EnsureCreated();
     }
 
     public IRepository<TEntity, TKey> GetRequiredRepository<TEntity, TKey>() where TEntity : Entity<TKey>
