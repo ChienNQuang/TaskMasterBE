@@ -7,7 +7,7 @@ public interface IUserService
 {
     Task<IEnumerable<UserDTO>> GetUsers();
     Task<UserDTO?> GetUserById(Guid id);
-    Task<UserDTO?> AddUser(UserCreateRequest user);
-    Task<UserDTO?> UpdateUser(UserUpdateRequest user);
+    Task<UserDTO?> AddUser(UserCreateRequest request);
+    Task<UserDTO?> UpdateUser(UserUpdateRequest request);
     Task<UserDTO?> DeactivateUser(Guid id);
 }

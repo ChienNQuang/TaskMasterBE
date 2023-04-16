@@ -36,11 +36,11 @@ public class UserService : IUserService
         return result;
     }
 
-    public async Task<UserDTO?> AddUser(UserCreateRequest user)
+    public async Task<UserDTO?> AddUser(UserCreateRequest request)
     {
         // add check email later
-        user.Password = SecurityUtil.Hash(user.Password);
-        var userEntityToAdd = _mapper.Map<UserEntity>(user);
+        request.Password = SecurityUtil.Hash(request.Password);
+        var userEntityToAdd = _mapper.Map<UserEntity>(request);
         var userEntity = await _userRepository.AddAsync(userEntityToAdd);
         var addResult = await _uow.CommitAsync();
         if (addResult <= 0) return null;
@@ -48,14 +48,14 @@ public class UserService : IUserService
         return result;
     }
 
-    public async Task<UserDTO?> UpdateUser(UserUpdateRequest user)
+    public async Task<UserDTO?> UpdateUser(UserUpdateRequest request)
     {
-        var userEntityToUpdate = await _userRepository.GetByIdAsync(user.Id);
+        var userEntityToUpdate = await _userRepository.GetByIdAsync(request.Id);
         if (userEntityToUpdate is null)
         {
             throw new KeyNotFoundException();
         }
-        userEntityToUpdate.HashedPassword = SecurityUtil.Hash(user.Password);
+        userEntityToUpdate.HashedPassword = SecurityUtil.Hash(request.Password);
         var userEntity = _userRepository.Update(userEntityToUpdate);
         var updateResult = await _uow.CommitAsync();
         if (updateResult <= 0) return null;

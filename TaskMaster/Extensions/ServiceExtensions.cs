@@ -19,6 +19,7 @@ public static class ServiceExtensions
         services.AddAutoMapper(config =>
         {
             config.AddProfile<UserProfile>();
+            config.AddProfile<ProjectProfile>();
         });
         return services;
     }
@@ -42,7 +43,8 @@ public static class ServiceExtensions
         services.AddScoped<DbContext, TaskMasterContext>()
             .AddScoped(typeof(IRepository<,>), typeof(Repository<,>))
             .AddScoped<IUnitOfWork, UnitOfWork>()
-            .AddScoped<IUserService, UserService>();
+            .AddScoped<IUserService, UserService>()
+            .AddScoped<IProjectService, ProjectService>();
 
         return services;
     }
