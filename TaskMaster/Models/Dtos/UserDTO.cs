@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace TaskMaster.Models.Dtos;
 
 public class UserDTO
@@ -6,5 +8,5 @@ public class UserDTO
     public string Email { get; set; }
     public string Username { get; set; }
     public bool Active { get; set; }
-    public DateOnly CreatedAt { get; set; }
+    public LocalDate CreatedAt { get; set; }
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NodaTime;
 
 namespace TaskMaster.Models.Entities;
 
@@ -13,5 +14,5 @@ public class UserEntity : Entity<Guid>
     public string HashedPassword { get; set; }
 
     public bool Active { get; set; } = true;
-    public DateOnly CreatedAt { get; set; } = DateOnly.FromDateTime(DateTime.Now);
+    public LocalDate CreatedAt { get; set; } = SystemClock.Instance.GetCurrentInstant().InUtc().Date;
 }

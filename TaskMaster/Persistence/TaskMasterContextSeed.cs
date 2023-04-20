@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using NodaTime;
 using TaskMaster.Models.Entities;
 using TaskMaster.Models.Enums;
 using ILogger = Serilog.ILogger;
@@ -62,8 +63,8 @@ public class TaskMasterContextSeed
             Name = "Haha",
             Description = "Hehe",
             Status = ProjectStatus.Planning,
-            StartDate = new DateOnly(2022, 1,1 ),
-            EndDate = new DateOnly(2024, 1, 1)
+            StartDate = new LocalDateTime(2022, 1, 1, 1, 1),
+            EndDate = new LocalDateTime(2024, 1, 1, 24, 24)
         },
         new()
         {
@@ -71,8 +72,8 @@ public class TaskMasterContextSeed
             Name = "Chichi",
             Description = "Chanhchanh",
             Status = ProjectStatus.Delayed,
-            StartDate = new DateOnly(2022, 1,1 ),
-            EndDate = new DateOnly(2024, 1, 1)
+            StartDate = new LocalDateTime(2022, 1, 1, 2, 2),
+            EndDate = new LocalDateTime(2024, 1, 2, 2, 2)
         }
     };
 
@@ -83,7 +84,7 @@ public class TaskMasterContextSeed
             Id = new Guid("F57FDC35-1B83-48CD-8479-A0C6FAB9D937"),
             Title = "Get this done",
             Description = "A very important task",
-            DueDate = new DateOnly(2023, 4, 20),
+            DueDate = new LocalDateTime(2023, 4, 20, 2, 2),
             PriorityLevel = PriorityLevel.Normal,
             Status = TaskStatus.InProgress,
             User = getUsers().ElementAt(0),
@@ -95,7 +96,7 @@ public class TaskMasterContextSeed
             Id = new Guid("F97A5151-5466-443F-82D2-9FE1689A2A24"),
             Title = "This is very bad",
             Description = "Hurry up!!",
-            DueDate = new DateOnly(2023, 4, 16),
+            DueDate = new LocalDateTime(2023, 4, 20, 1, 1),
             PriorityLevel = PriorityLevel.Critical,
             Status = TaskStatus.OnHold,
             User = getUsers().ElementAt(1),

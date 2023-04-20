@@ -32,7 +32,8 @@ public static class ServiceExtensions
         
         services.AddDbContext<TaskMasterContext>(b =>
         {
-            b.UseNpgsql(databaseSettings.ConnectionString);
+            b.UseNpgsql(databaseSettings.ConnectionString,
+                o => o.UseNodaTime());
         });
 
         return services;

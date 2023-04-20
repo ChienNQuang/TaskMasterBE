@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NodaTime;
 using TaskMaster.Models.Enums;
 
 namespace TaskMaster.Models.Entities;
@@ -9,10 +10,9 @@ public class ProjectEntity : Entity<Guid>
     public string Name { get; set; }
     [MaxLength(1000)]
     public string Description { get; set; }
-
     public UserEntity Owner { get; set; }
-    public DateOnly StartDate { get; set; }
-    public DateOnly EndDate { get; set; }
+    public LocalDateTime StartDate { get; set; }
+    public LocalDateTime EndDate { get; set; }
     public ProjectStatus Status { get; set; }
-    public DateOnly CreatedAt { get; set; }
+    public LocalDate CreatedAt { get; set; }
 }

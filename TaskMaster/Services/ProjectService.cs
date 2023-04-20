@@ -24,6 +24,7 @@ public class ProjectService : IProjectService
     }
     public async Task<IEnumerable<ProjectDTO>> GetProjectsOfUser(Guid userId)
     {
+        var user = await GetUserById(userId);
         var projectEntities = _projectRepository.GetAll();
         var projects = projectEntities.Where(p => p.Owner.Id == userId);
         var result = _mapper.Map<List<ProjectDTO>>(await projects.ToListAsync());
