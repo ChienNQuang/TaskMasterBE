@@ -13,5 +13,5 @@ public class ProjectDTO
     public LocalDateTime StartDate { get; set; }
     public LocalDateTime EndDate { get; set; }
     public ProjectStatus Status { get; set; } = ProjectStatus.Planning;
-    public LocalDate CreatedAt { get; set; }
+    public LocalDate CreationDate { get; set; }
 }

@@ -14,5 +14,5 @@ public class ProjectEntity : Entity<Guid>
     public LocalDateTime StartDate { get; set; }
     public LocalDateTime EndDate { get; set; }
     public ProjectStatus Status { get; set; }
-    public LocalDate CreatedAt { get; set; }
+    public LocalDate CreationDate { get; set; }
 }

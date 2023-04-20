@@ -12,7 +12,6 @@ public class UserEntity : Entity<Guid>
     public string Username { get; set; }
     [MaxLength(256)]
     public string HashedPassword { get; set; }
-
     public bool Active { get; set; } = true;
-    public LocalDate CreatedAt { get; set; } = SystemClock.Instance.GetCurrentInstant().InUtc().Date;
+    public LocalDate CreationDate { get; set; } = SystemClock.Instance.GetCurrentInstant().InUtc().Date;
 }

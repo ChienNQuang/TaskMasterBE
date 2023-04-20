@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using TaskMaster.Persistence;
 namespace TaskMaster.Migrations
 {
     [DbContext(typeof(TaskMasterContext))]
-    partial class TaskMasterContextModelSnapshot : ModelSnapshot
+    [Migration("20230420084149_ChangeDateTimeType")]
+    partial class ChangeDateTimeType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,7 +32,7 @@ namespace TaskMaster.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<LocalDate>("CreationDate")
+                    b.Property<LocalDate>("CreatedAt")
                         .HasColumnType("date");
 
                     b.Property<string>("Description")
@@ -113,7 +116,7 @@ namespace TaskMaster.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("boolean");
 
-                    b.Property<LocalDate>("CreationDate")
+                    b.Property<LocalDate>("CreatedAt")
                         .HasColumnType("date");
 
                     b.Property<string>("Email")
