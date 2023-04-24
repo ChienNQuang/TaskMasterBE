@@ -1,3 +1,9 @@
+using System.Net;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.OpenApi.Models;
+using TaskMaster.Controllers.Payloads.Responses;
+
 namespace TaskMaster.Middlewares;
 
 public class ExceptionMiddleware : IMiddleware
@@ -37,5 +43,14 @@ public class ExceptionMiddleware : IMiddleware
         {
             context.Response.StatusCode = StatusCodes.Status501NotImplemented;
         }
+
+        await WriteExceptionAsync(context, ex);
+    }
+
+    private async Task WriteExceptionAsync(HttpContext context, Exception ex)
+    {
+        await context.Response.Body.WriteAsync(
+            JsonSerializer.SerializeToUtf8Bytes<ApiResponse<string>>(ApiResponse<string>.Fail(ex),
+                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
     }
 }
