@@ -8,18 +8,16 @@ namespace TaskMaster.Controllers;
 [Route("[controller]")]
 public class TasksController : ControllerBase
 {
-    private readonly IUnitOfWork _uow;
-    public TasksController(IUnitOfWork uow)
+    private readonly ITaskService _taskService;
+    public TasksController(IUnitOfWork uow, ITaskService taskService)
     {
-        _uow = uow;
+        _taskService = taskService;
     }
 
     [HttpGet()]
-    public IActionResult GetTasksByProject()
+    public async Task<IActionResult> GetTasksByProject(Guid projectId)
     {
-        var taskRepo = _uow.GetRequiredRepository<TaskEntity, Guid>();
-        var tasks = taskRepo.GetAll();
-        // var tasks = await _service.GetTasksAsync();
+        var tasks = await _taskService.GetTasksByProjectIdAsync(projectId);
         return Ok(tasks);
     }
 }

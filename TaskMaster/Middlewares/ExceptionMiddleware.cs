@@ -22,5 +22,20 @@ public class ExceptionMiddleware : IMiddleware
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;
         }
+
+        if (ex is ArgumentException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        }
+
+        if (ex is ApplicationException)
+        {
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        }
+
+        if (ex is NotImplementedException)
+        {
+            context.Response.StatusCode = StatusCodes.Status501NotImplemented;
+        }
     }
 }

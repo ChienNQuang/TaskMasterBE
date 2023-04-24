@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 using TaskMaster.Controllers.Payloads.Requests;
 using TaskMaster.Models.Dtos;
 using TaskMaster.Models.Entities;
@@ -22,46 +23,53 @@ public class ProjectService : IProjectService
         _userRepository = _uow.GetRequiredRepository<UserEntity, Guid>();
         _projectRepository = _uow.GetRequiredRepository<ProjectEntity, Guid>();
     }
-    public async Task<IEnumerable<ProjectDTO>> GetProjectsOfUser(Guid userId)
+    public async Task<IEnumerable<ProjectDto>> GetProjectsOfUser(Guid userId)
     {
         var user = await GetUserById(userId);
         var projectEntities = _projectRepository.GetAll();
         var projects = projectEntities.Where(p => p.Owner.Id == userId);
-        var result = _mapper.Map<List<ProjectDTO>>(await projects.ToListAsync());
+        var result = _mapper.Map<List<ProjectDto>>(await projects.ToListAsync());
         return result;
     }
 
-    public async Task<ProjectDTO> GetProjectOfUserById(Guid userId, Guid projectId)
+    public async Task<ProjectDto> GetProjectOfUserById(Guid userId, Guid projectId)
     {
         var user = await GetUserById(userId);
 
         var project = await _projectRepository.GetByIdAsync(projectId);
-        if (project is null || project.Owner.Id.Equals(user.Id))
+        if (project is null || !project.Owner.Id.Equals(user.Id))
         {
             throw new KeyNotFoundException("Project does not exist!");
         }
 
-        var result = _mapper.Map<ProjectDTO>(project);
+        var result = _mapper.Map<ProjectDto>(project);
         return result;
     }
 
-    public async Task<ProjectDTO> CreateProjectOfUser(Guid userId, ProjectCreateRequest request)
+    public async Task<ProjectDto> CreateProjectOfUser(Guid userId, ProjectCreateRequest request)
     {
         var user = await GetUserById(userId);
+        if (user.Active is false)
+        {
+            throw new ArgumentException($"User with id {userId} is deactivated!");
+        }
 
-        var project = _mapper.Map<ProjectDTO>(request);
-        project.Owner = _mapper.Map<UserDTO>(user);
-        var projectToAdd = _mapper.Map<ProjectEntity>(project);
+        var projectToAdd = _mapper.Map<ProjectEntity>(request);
+        projectToAdd.Owner = user;
         var addedProject = await _projectRepository.AddAsync(projectToAdd);
-        var addedResult = await _uow.CommitAsync();
-        if (addedResult <= 0) throw new ApplicationException("Something went wrong");
-        var result = _mapper.Map<ProjectDTO>(addedProject);
+        var addResult = await _uow.CommitAsync();
+        if (addResult <= 0) throw new ApplicationException("Something went wrong");
+        var result = _mapper.Map<ProjectDto>(addedProject);
         return result;
     }
 
-    public async Task<ProjectDTO> UpdateProjectOfUser(Guid userId, Guid projectId, JsonPatchDocument<ProjectDTO> request)
+    public async Task<ProjectDto> UpdateProjectOfUser(Guid userId, Guid projectId, ProjectUpdatePatchRequest request)
     {
         var user = await GetUserById(userId);
+        if (user.Active is false)
+        {
+            throw new ArgumentException($"User with id {userId} is deactivated!");
+        }
 
         var projectEntity = await _projectRepository.GetByIdAsync(projectId);
         if (projectEntity is null)
@@ -69,14 +77,54 @@ public class ProjectService : IProjectService
             throw new KeyNotFoundException("Project does not exist!");
         }
 
-        var project = _mapper.Map<ProjectDTO>(projectEntity);
-        request.ApplyTo(project);
+        if (request.Description is not null)
+        {
+            projectEntity.Description = request.Description.Value;
+        }
+
+        if (request.StartDate is not null)
+        {
+            projectEntity.StartDate = LocalDateTime.FromDateTime(request.StartDate.Value);
+        }
+        
+        if (request.EndDate is not null)
+        {
+            projectEntity.EndDate = LocalDateTime.FromDateTime(request.EndDate.Value);
+        }
+
+        if (request.Status is not null)
+        {
+            projectEntity.Status = request.Status.Value;
+        }
+
+        var updatedProject = _projectRepository.Update(projectEntity);
+        var updateResult = await _uow.CommitAsync();
+        if (updateResult <= 0) throw new ApplicationException("Cannot update!");
+
+        var project = _mapper.Map<ProjectDto>(updatedProject);
         return project;
     }
 
-    public Task<ProjectDTO> DeleteProjectOfUser(Guid userId, Guid projectId)
+    public async Task<ProjectDto> DeleteProjectOfUser(Guid userId, Guid projectId)
     {
-        throw new NotImplementedException();
+        var user = await GetUserById(userId);
+        if (user.Active is false)
+        {
+            throw new ArgumentException($"User with id {userId} is deactivated!");
+        }
+
+        var projectEntity = await _projectRepository.GetByIdAsync(projectId);
+        if (projectEntity is null)
+        {
+            throw new KeyNotFoundException("Project does not exist!");
+        }
+
+        var deletedProject = _projectRepository.Remove(projectEntity.Id);
+        var deleteResult = await _uow.CommitAsync();
+        if (deleteResult <= 0) throw new ApplicationException($"Cannot delete project with id {projectId}");
+
+        var project = _mapper.Map<ProjectDto>(deletedProject);
+        return project;
     }
     
     private async Task<UserEntity> GetUserById(Guid userId)
@@ -86,6 +134,7 @@ public class ProjectService : IProjectService
         {
             throw new KeyNotFoundException("User does not exist!");
         }
+        
 
         return user;
     }

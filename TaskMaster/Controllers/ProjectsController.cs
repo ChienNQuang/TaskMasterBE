@@ -38,7 +38,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPatch]
-    public async Task<IActionResult> UpdateProject(Guid userId, Guid projectId, [FromBody] JsonPatchDocument<ProjectDTO> request)
+    public async Task<IActionResult> UpdateProject(Guid userId, Guid projectId, [FromBody] ProjectUpdatePatchRequest request)
     {
         var updatedProject = await _projectService.UpdateProjectOfUser(userId, projectId, request);
         return Ok(updatedProject);

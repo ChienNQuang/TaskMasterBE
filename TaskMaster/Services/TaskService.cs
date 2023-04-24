@@ -1,15 +1,11 @@
+using TaskMaster.Models.Dtos;
 using TaskMaster.Models.Entities;
 
 namespace TaskMaster.Services;
 
 public class TaskService : ITaskService
 {
-    public Task<IEnumerable<TaskEntity>> GetTasksAsync()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<TaskEntity> GetTaskByIdAsync()
+    public Task<IEnumerable<TaskDto>> GetTasksByProjectIdAsync(Guid projectId)
     {
         throw new NotImplementedException();
     }

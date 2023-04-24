@@ -22,21 +22,21 @@ public class UserService : IUserService
         _userRepository = _uow.GetRequiredRepository<UserEntity, Guid>();
     }
 
-    public async Task<IEnumerable<UserDTO>> GetUsers()
+    public async Task<IEnumerable<UserDto>> GetUsers()
     {
         var entities = await _userRepository.GetAll().ToListAsync();
-        var result = _mapper.Map<List<UserDTO>>(entities);
+        var result = _mapper.Map<List<UserDto>>(entities);
         return result;
     }
 
-    public async Task<UserDTO?> GetUserById(Guid id)
+    public async Task<UserDto?> GetUserById(Guid id)
     {
         var userEntity = await _userRepository.GetByIdAsync(id);
-        var result = _mapper.Map<UserDTO>(userEntity);
+        var result = _mapper.Map<UserDto>(userEntity);
         return result;
     }
 
-    public async Task<UserDTO?> AddUser(UserCreateRequest request)
+    public async Task<UserDto?> AddUser(UserCreateRequest request)
     {
         // add check email later
         request.Password = SecurityUtil.Hash(request.Password);
@@ -44,11 +44,11 @@ public class UserService : IUserService
         var userEntity = await _userRepository.AddAsync(userEntityToAdd);
         var addResult = await _uow.CommitAsync();
         if (addResult <= 0) return null;
-        var result = _mapper.Map<UserDTO>(userEntity);
+        var result = _mapper.Map<UserDto>(userEntity);
         return result;
     }
 
-    public async Task<UserDTO?> UpdateUser(UserUpdateRequest request)
+    public async Task<UserDto?> UpdateUser(UserUpdateRequest request)
     {
         var userEntityToUpdate = await _userRepository.GetByIdAsync(request.Id);
         if (userEntityToUpdate is null)
@@ -59,11 +59,11 @@ public class UserService : IUserService
         var userEntity = _userRepository.Update(userEntityToUpdate);
         var updateResult = await _uow.CommitAsync();
         if (updateResult <= 0) return null;
-        var result = _mapper.Map<UserDTO>(userEntity);
+        var result = _mapper.Map<UserDto>(userEntity);
         return result;
     }
 
-    public async Task<UserDTO?> DeactivateUser(Guid id)
+    public async Task<UserDto?> DeactivateUser(Guid id)
     {
         var userEntityToUpdate = await _userRepository.GetByIdAsync(id);
         if (userEntityToUpdate is null) return null;
@@ -71,7 +71,7 @@ public class UserService : IUserService
         var userEntity = _userRepository.Update(userEntityToUpdate);
         var updateResult = await _uow.CommitAsync();
         if (updateResult <= 0) return null;
-        var result = _mapper.Map<UserDTO>(userEntity);
+        var result = _mapper.Map<UserDto>(userEntity);
         return result;
     }
 }

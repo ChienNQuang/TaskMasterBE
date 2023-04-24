@@ -6,9 +6,9 @@ namespace TaskMaster.Services;
 
 public interface IProjectService
 {
-    Task<IEnumerable<ProjectDTO>> GetProjectsOfUser(Guid userId);
-    Task<ProjectDTO> GetProjectOfUserById(Guid userId, Guid projectId);
-    Task<ProjectDTO> CreateProjectOfUser(Guid userId, ProjectCreateRequest request);
-    Task<ProjectDTO> UpdateProjectOfUser(Guid userId, Guid projectId, JsonPatchDocument<ProjectDTO> request);
-    Task<ProjectDTO> DeleteProjectOfUser(Guid userId, Guid projectId);
+    Task<IEnumerable<ProjectDto>> GetProjectsOfUser(Guid userId);
+    Task<ProjectDto> GetProjectOfUserById(Guid userId, Guid projectId);
+    Task<ProjectDto> CreateProjectOfUser(Guid userId, ProjectCreateRequest request);
+    Task<ProjectDto> UpdateProjectOfUser(Guid userId, Guid projectId, ProjectUpdatePatchRequest request);
+    Task<ProjectDto> DeleteProjectOfUser(Guid userId, Guid projectId);
 }

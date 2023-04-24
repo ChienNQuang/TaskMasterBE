@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TaskMaster.Persistence;
-using TaskMaster.Profiles;
+using TaskMaster.MappingProfiles;
+using TaskMaster.Middlewares;
 using TaskMaster.Repositories;
 using TaskMaster.Services;
 using TaskMaster.Shared;
@@ -18,8 +19,8 @@ public static class ServiceExtensions
         services.AddSwaggerGen();
         services.AddAutoMapper(config =>
         {
-            config.AddProfile<UserProfile>();
-            config.AddProfile<ProjectProfile>();
+            config.AddProfile<UserMappingProfile>();
+            config.AddProfile<ProjectMappingProfile>();
         });
         return services;
     }
@@ -41,7 +42,8 @@ public static class ServiceExtensions
 
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
-        services.AddScoped<DbContext, TaskMasterContext>()
+        services.AddScoped<ExceptionMiddleware>()
+            .AddScoped<DbContext, TaskMasterContext>()
             .AddScoped(typeof(IRepository<,>), typeof(Repository<,>))
             .AddScoped<IUnitOfWork, UnitOfWork>()
             .AddScoped<IUserService, UserService>()
