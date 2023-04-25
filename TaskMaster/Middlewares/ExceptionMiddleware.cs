@@ -1,7 +1,4 @@
-using System.Net;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.OpenApi.Models;
 using TaskMaster.Controllers.Payloads.Responses;
 
 namespace TaskMaster.Middlewares;
@@ -24,30 +21,19 @@ public class ExceptionMiddleware : IMiddleware
     {
         context.Response.ContentType = "application/json";
 
-        if (ex is KeyNotFoundException)
+        context.Response.StatusCode = ex switch
         {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-        }
+            KeyNotFoundException => StatusCodes.Status404NotFound,
+            ArgumentException => StatusCodes.Status400BadRequest,
+            ApplicationException => StatusCodes.Status304NotModified,
+            NotImplementedException => StatusCodes.Status501NotImplemented,
+            _ => context.Response.StatusCode
+        };
 
-        if (ex is ArgumentException)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        }
-
-        if (ex is ApplicationException)
-        {
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-        }
-
-        if (ex is NotImplementedException)
-        {
-            context.Response.StatusCode = StatusCodes.Status501NotImplemented;
-        }
-
-        await WriteExceptionAsync(context, ex);
+        await WriteExceptionMessageAsync(context, ex);
     }
 
-    private async Task WriteExceptionAsync(HttpContext context, Exception ex)
+    private async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
     {
         await context.Response.Body.WriteAsync(
             JsonSerializer.SerializeToUtf8Bytes<ApiResponse<string>>(ApiResponse<string>.Fail(ex),

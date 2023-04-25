@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using TaskMaster.Controllers.Payloads.Requests;
+using TaskMaster.Controllers.Payloads.Responses;
 using TaskMaster.Models.Dtos;
 using TaskMaster.Services;
 
@@ -14,59 +17,39 @@ public class UsersController : ControllerBase
         _userService = userService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetUsers()
+    [HttpGet(Name = "GetUsers")]
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
-        var result = await _userService.GetUsers();
-        return Ok(result);
+        var users = await _userService.GetUsers();
+        return Ok(ApiResponse<IEnumerable<UserDto>>.Succeed(users));
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetUserById(Guid id)
+    [HttpGet("{id}", Name = "GetUserById")]
+    public async Task<ActionResult<UserDto>> GetUserById(Guid id)
     {
-        var result = await _userService.GetUserById(id);
-        if (result is null)
-        {
-            return NotFound();
-        }
-        
-        return Ok(result);
+        var user = await _userService.GetUserById(id);
+        return Ok(ApiResponse<UserDto>.Succeed(user));
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] UserCreateRequest user)
+    [HttpPost(Name = "CreateUser")]
+    public async Task<ActionResult<UserDto>> CreateUser([FromBody] UserCreateRequest request)
     {
-        var result = await _userService.AddUser(user);
-        if (result is null)
-        {
-            return BadRequest();
-        }
-        return Ok(result);
+        var addedUser = await _userService.AddUser(request);
+        return CreatedAtRoute("GetUserById", new { addedUser.Id }, 
+            ApiResponse<UserDto>.Succeed(addedUser));
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserUpdateRequest user)
+    [HttpPut("{id}", Name = "UpdateUser")]
+    public async Task<ActionResult<UserDto>> UpdateUser(Guid id, [FromBody] UserUpdateRequest request)
     {
-        if (!id.Equals(user.Id))
-        {
-            return BadRequest();
-        }
-        var result = await _userService.UpdateUser(user);
-        if (result is null)
-        {
-            return NotFound();
-        }
-        return Ok(result);
+        var updatedUser = await _userService.UpdateUser(request);
+        return Ok(ApiResponse<UserDto>.Succeed(updatedUser));
     }
 
-    [HttpPost("{id}")]
-    public async Task<IActionResult> DeactivateUser(Guid id)
+    [HttpPost("{id}", Name = "DeactivateUser")]
+    public async Task<ActionResult<UserDto>> DeactivateUser(Guid id)
     {
-        var result = await _userService.DeactivateUser(id);
-        if (result is null)
-        {
-            return NotFound();
-        }
-        return Ok(result);
+        var deactivatedUser = await _userService.DeactivateUser(id);
+        return Ok(ApiResponse<UserDto>.Succeed(deactivatedUser));
     }
 }
