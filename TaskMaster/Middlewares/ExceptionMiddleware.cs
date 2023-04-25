@@ -1,5 +1,7 @@
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using TaskMaster.Controllers.Payloads.Responses;
+using TaskMaster.Exceptions;
 
 namespace TaskMaster.Middlewares;
 
@@ -21,22 +23,56 @@ public class ExceptionMiddleware : IMiddleware
     {
         context.Response.ContentType = "application/json";
 
-        context.Response.StatusCode = ex switch
+        if (ex is KeyNotFoundException)
         {
-            KeyNotFoundException => StatusCodes.Status404NotFound,
-            ArgumentException => StatusCodes.Status400BadRequest,
-            ApplicationException => StatusCodes.Status304NotModified,
-            NotImplementedException => StatusCodes.Status501NotImplemented,
-            _ => context.Response.StatusCode
-        };
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            await WriteExceptionMessageAsync(context, ex);
+        }
 
-        await WriteExceptionMessageAsync(context, ex);
+
+        if (ex is ArgumentException)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await WriteExceptionMessageAsync(context, ex);
+        }
+
+
+        if (ex is ApplicationException)
+        {
+            context.Response.StatusCode = StatusCodes.Status304NotModified;       
+            await WriteExceptionMessageAsync(context, ex);
+        }
+
+
+        // if (ex is NotImplementedException)
+        // {
+        //     context.Response.StatusCode = StatusCodes.Status501NotImplemented;
+        //     await WriteExceptionMessageAsync(context, ex);
+        // }
+
+        if (ex is UserValidationException uve)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+            var data =
+                uve.Errors.ToDictionary(vf => vf.PropertyName.ToLower(), vf => vf.ErrorMessage);
+
+            var apiResponse = ApiResponse<Dictionary<string, string>>.Fail(ex) with
+            {
+                Data = data
+            };
+            await context.Response.Body.WriteAsync(SerializeToUtf8BytesWeb(apiResponse));
+        }
+        
     }
 
-    private async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
+    private static async Task WriteExceptionMessageAsync(HttpContext context, Exception ex)
     {
-        await context.Response.Body.WriteAsync(
-            JsonSerializer.SerializeToUtf8Bytes<ApiResponse<string>>(ApiResponse<string>.Fail(ex),
-                new JsonSerializerOptions(JsonSerializerDefaults.Web)));
+        await context.Response.Body.WriteAsync(SerializeToUtf8BytesWeb(ApiResponse<string>.Fail(ex)));
+    }
+
+    private static byte[] SerializeToUtf8BytesWeb<T>(T value)
+    {
+        return JsonSerializer.SerializeToUtf8Bytes<T>(value, new JsonSerializerOptions(JsonSerializerDefaults.Web));
     }
 }

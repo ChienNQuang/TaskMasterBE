@@ -1,6 +1,6 @@
 namespace TaskMaster.Controllers.Payloads.Responses;
 
-public class ApiResponse<T>
+public record ApiResponse<T>
 {
     public bool Succeeded { get; set; }
     public string Message { get; set; }

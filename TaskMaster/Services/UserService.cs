@@ -2,10 +2,12 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TaskMaster.Controllers.Payloads.Requests;
+using TaskMaster.Exceptions;
 using TaskMaster.Helpers;
 using TaskMaster.Models.Dtos;
 using TaskMaster.Models.Entities;
 using TaskMaster.Repositories;
+using TaskMaster.Validators;
 
 namespace TaskMaster.Services;
 
@@ -44,6 +46,19 @@ public class UserService : IUserService
     public async Task<UserDto> AddUser(UserCreateRequest request)
     {
         // add check email later
+        var validator = new UserValidator();
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            throw new UserValidationException(validationResult.Errors);
+            // var exceptions = new List<Exception>();
+            // validationResult.Errors.ForEach(vf =>
+            // {
+            //     var item = new Exception(vf.);
+            //     exceptions.Add(item);
+            // });
+            // throw new AggregateException(exceptions);
+        }
         request.Password = SecurityUtil.Hash(request.Password);
         var userEntityToAdd = _mapper.Map<UserEntity>(request);
         var userEntity = await _userRepository.AddAsync(userEntityToAdd);
