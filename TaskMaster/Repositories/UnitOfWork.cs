@@ -27,6 +27,9 @@ public class UnitOfWork : IUnitOfWork
 
     protected virtual void Dispose(bool disposing)
     {
-        _dbContext.Dispose();
+        if (disposing)
+        {
+            _dbContext.Dispose();
+        }
     }
 }
