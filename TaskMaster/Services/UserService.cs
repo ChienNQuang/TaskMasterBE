@@ -44,6 +44,11 @@ public class UserService : IUserService
 
     public async Task<UserDto> AddUser(UserCreateRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentException(
+                "The request was invalid because one or more properties were not correctly formatted");
+        }
         var validator = UserCreateRequestValidator.New();
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -81,6 +86,11 @@ public class UserService : IUserService
 
     public async Task<UserDto> UpdateUser(Guid id, UserUpdateRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentException(
+                "The request was invalid because one or more properties were not correctly formatted");
+        }
         var validator = UserUpdateRequestValidator.New();
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
