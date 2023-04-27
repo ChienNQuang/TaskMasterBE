@@ -20,6 +20,7 @@ public static class WebAppExtensions
 
         app.UseHttpsRedirection();
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();
