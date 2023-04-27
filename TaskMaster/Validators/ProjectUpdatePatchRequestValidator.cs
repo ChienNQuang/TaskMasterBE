@@ -27,10 +27,12 @@ public class ProjectUpdatePatchRequestValidator : AbstractValidator<ProjectUpdat
         const string errorMessage = "Start date must be less than end date!";
         if (dates.StartDate is null && dates.EndDate is null) return;
         
-        if (dates.StartDate is not null && dates.EndDate is not null 
-                                        && dates.StartDate.Value >= dates.EndDate.Value)
+        if (dates.StartDate is not null && dates.EndDate is not null)
         {
-            context.AddFailure(nameof(dates.StartDate), errorMessage);
+            if (dates.StartDate.Value >= dates.EndDate.Value)
+            {
+                context.AddFailure(nameof(dates.StartDate), errorMessage);
+            }
             return;
         }
         
