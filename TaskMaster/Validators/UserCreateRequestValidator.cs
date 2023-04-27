@@ -3,9 +3,9 @@ using TaskMaster.Controllers.Payloads.Requests;
 
 namespace TaskMaster.Validators;
 
-public class UserValidator : AbstractValidator<UserCreateRequest>
+public class UserCreateRequestValidator : AbstractValidator<UserCreateRequest>
 {
-    public UserValidator()
+    private UserCreateRequestValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;
         RuleFor(u => u.Email)
@@ -25,7 +25,11 @@ public class UserValidator : AbstractValidator<UserCreateRequest>
             .WithMessage("Invalid username length!");
 
         RuleFor(u => u.Password)
+            .NotNull()
+            .WithMessage("Must provide password!")
             .MinimumLength(8)
             .WithMessage("Invalid password length!");
     }
+
+    public static UserCreateRequestValidator New() => new();
 }

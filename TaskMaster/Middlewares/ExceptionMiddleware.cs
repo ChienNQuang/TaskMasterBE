@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using TaskMaster.Controllers.Payloads.Responses;
 using TaskMaster.Exceptions;
 
@@ -15,7 +16,15 @@ public class ExceptionMiddleware : IMiddleware
         }
         catch (Exception ex)
         {
-            await HandleExceptionAsync(context, ex);
+            try
+            {
+                await HandleExceptionAsync(context, ex);
+            }
+            catch (Exception e)
+            {
+                context.Response.ContentType = "application/json";
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            }
         }
     }
 
@@ -43,19 +52,24 @@ public class ExceptionMiddleware : IMiddleware
             await WriteExceptionMessageAsync(context, ex);
         }
 
+        if (ex is UserDuplicateException)
+        {
+            context.Response.StatusCode = StatusCodes.Status409Conflict;       
+            await WriteExceptionMessageAsync(context, ex);
+        }
 
-        // if (ex is NotImplementedException)
-        // {
-        //     context.Response.StatusCode = StatusCodes.Status501NotImplemented;
-        //     await WriteExceptionMessageAsync(context, ex);
-        // }
+        if (ex is DbUpdateException)
+        {
+            context.Response.StatusCode = StatusCodes.Status304NotModified;
+            await WriteExceptionMessageAsync(context, ex);
+        }
 
-        if (ex is UserValidationException uve)
+        if (ex is RequestValidationException uve)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
             var data =
-                uve.Errors.ToDictionary(vf => vf.PropertyName.ToLower(), vf => vf.ErrorMessage);
+                uve.Errors!.ToDictionary(vf => vf.PropertyName.ToLower(), vf => vf.ErrorMessage);
 
             var apiResponse = ApiResponse<Dictionary<string, string>>.Fail(ex) with
             {

@@ -13,6 +13,10 @@ public static class WebAppExtensions
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+        else
+        {
+            app.UseHsts();
+        }
 
         app.UseHttpsRedirection();
 

@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using TaskMaster.Models.Entities;
 
@@ -15,6 +16,9 @@ where TEntity : Entity<TKey>
 
     public IQueryable<TEntity> GetAll() 
         => _dbContext.Set<TEntity>();
+
+    public IQueryable<TEntity> FindByCondition(Expression<Func<TEntity, bool>> predicate) 
+        => _dbContext.Set<TEntity>().Where(predicate);
 
     public async Task<TEntity?> GetByIdAsync(TKey id)
         => await _dbContext.Set<TEntity>().FindAsync(id);

@@ -1,10 +1,15 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using TaskMaster.Persistence;
 using TaskMaster.MappingProfiles;
 using TaskMaster.Middlewares;
+using TaskMaster.Policies;
 using TaskMaster.Repositories;
 using TaskMaster.Services;
 using TaskMaster.Shared;
+using TaskMaster.Validators;
 
 namespace TaskMaster.Extensions;
 
@@ -14,7 +19,8 @@ public static class ServiceExtensions
     {
         services.ConfigureTaskMasterDbContext(configuration);
         services.AddServices();
-        services.AddControllers();
+        services.AddControllers(opt =>
+            opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())));
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
         services.AddAutoMapper(config =>
@@ -29,7 +35,7 @@ public static class ServiceExtensions
     {
         var databaseSettings = configuration.GetSection(nameof(DatabaseSettings)).Get<DatabaseSettings>();
         if (databaseSettings is null || string.IsNullOrEmpty(databaseSettings.ConnectionString))
-            throw new ArgumentNullException("Connection string is not configured");
+            throw new InvalidOperationException("No connection strings are provided!");
         
         services.AddDbContext<TaskMasterContext>(b =>
         {

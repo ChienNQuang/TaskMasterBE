@@ -1,11 +1,14 @@
+using System.ComponentModel.DataAnnotations;
 using AutoMapper;
-using Microsoft.AspNetCore.JsonPatch;
+using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using TaskMaster.Controllers.Payloads.Requests;
+using TaskMaster.Exceptions;
 using TaskMaster.Models.Dtos;
 using TaskMaster.Models.Entities;
 using TaskMaster.Repositories;
+using TaskMaster.Validators;
 
 namespace TaskMaster.Services;
 
@@ -25,7 +28,7 @@ public class ProjectService : IProjectService
     }
     public async Task<IEnumerable<ProjectDto>> GetProjectsOfUser(Guid userId)
     {
-        var user = await GetUserById(userId);
+        await GetUserById(userId);
         var projectEntities = _projectRepository.GetAll();
         var projects = projectEntities.Where(p => p.Owner.Id == userId);
         var result = _mapper.Map<List<ProjectDto>>(await projects.ToListAsync());
@@ -48,6 +51,17 @@ public class ProjectService : IProjectService
 
     public async Task<ProjectDto> CreateProjectOfUser(Guid userId, ProjectCreateRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentException(
+                "The request was invalid because one or more properties were not correctly formatted");
+        }
+        var validator = ProjectCreateRequestValidator.New();
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            throw new RequestValidationException(validationResult.Errors);
+        }
         var user = await GetUserById(userId);
         if (user.Active is false)
         {
@@ -58,13 +72,21 @@ public class ProjectService : IProjectService
         projectToAdd.Owner = user;
         var addedProject = await _projectRepository.AddAsync(projectToAdd);
         var addResult = await _uow.CommitAsync();
-        if (addResult <= 0) throw new ApplicationException("Something went wrong");
+        if (addResult <= 0)
+        {
+            throw new DbUpdateException("Something went wrong");
+        }
         var result = _mapper.Map<ProjectDto>(addedProject);
         return result;
     }
 
     public async Task<ProjectDto> UpdateProjectOfUser(Guid userId, Guid projectId, ProjectUpdatePatchRequest request)
     {
+        if (request is null)
+        {
+            throw new ArgumentException(
+                "The request was invalid because one or more properties were not correctly formatted");
+        }
         var user = await GetUserById(userId);
         if (user.Active is false)
         {
@@ -72,19 +94,26 @@ public class ProjectService : IProjectService
         }
 
         var projectEntity = await _projectRepository.GetByIdAsync(projectId);
-        if (projectEntity is null)
+        if (projectEntity is null || !projectEntity.Owner.Id.Equals(user.Id))
         {
             throw new KeyNotFoundException("Project does not exist!");
         }
 
-        if (request.Description is not null)
+        var validator = ProjectUpdatePatchRequestValidator.New(_projectRepository, projectId);
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            throw new RequestValidationException(validationResult.Errors);
+        }
+
+        if (request.Description?.Value is not null)
         {
             projectEntity.Description = request.Description.Value;
         }
 
         if (request.StartDate is not null)
         {
-            projectEntity.StartDate = LocalDateTime.FromDateTime(request.StartDate.Value);
+            projectEntity.StartDate = LocalDateTime.FromDateTime(request.StartDate!.Value);
         }
         
         if (request.EndDate is not null)
@@ -99,7 +128,10 @@ public class ProjectService : IProjectService
 
         var updatedProject = _projectRepository.Update(projectEntity);
         var updateResult = await _uow.CommitAsync();
-        if (updateResult <= 0) throw new ApplicationException("Cannot update!");
+        if (updateResult <= 0)
+        {
+            throw new DbUpdateException("Cannot update!");
+        }
 
         var project = _mapper.Map<ProjectDto>(updatedProject);
         return project;
@@ -121,7 +153,10 @@ public class ProjectService : IProjectService
 
         var deletedProject = _projectRepository.Remove(projectEntity.Id);
         var deleteResult = await _uow.CommitAsync();
-        if (deleteResult <= 0) throw new ApplicationException($"Cannot delete project with id {projectId}");
+        if (deleteResult <= 0)
+        {
+            throw new DbUpdateException($"Cannot delete project with id {projectId}");
+        }
 
         var project = _mapper.Map<ProjectDto>(deletedProject);
         return project;
@@ -135,7 +170,6 @@ public class ProjectService : IProjectService
             throw new KeyNotFoundException("User does not exist!");
         }
         
-
         return user;
     }
 }

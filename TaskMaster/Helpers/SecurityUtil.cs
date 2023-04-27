@@ -3,7 +3,7 @@ using System.Text;
 
 namespace TaskMaster.Helpers;
 
-public class SecurityUtil
+public static class SecurityUtil
 {
     public static string Hash(string input)
     {

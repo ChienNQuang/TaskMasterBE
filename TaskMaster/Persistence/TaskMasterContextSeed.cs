@@ -7,7 +7,7 @@ using TaskStatus = TaskMaster.Models.Enums.TaskStatus;
 
 namespace TaskMaster.Persistence;
 
-public class TaskMasterContextSeed
+public static class TaskMasterContextSeed
 {
     public static async Task SeedUserAsync(TaskMasterContext context, ILogger logger)
     {

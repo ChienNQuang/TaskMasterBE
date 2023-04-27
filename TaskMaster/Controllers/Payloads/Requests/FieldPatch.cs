@@ -6,5 +6,5 @@ namespace TaskMaster.Controllers.Payloads.Requests;
 public class FieldPatch<T>
 {
     [DataMember(Name = "value")]
-    public T Value { get; set; }
+    public T? Value { get; set; }
 }

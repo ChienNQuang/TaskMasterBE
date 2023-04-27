@@ -8,7 +8,7 @@ using TaskMaster.Services;
 
 namespace TaskMaster.Controllers;
 
-[Route("users/{userId}/[controller]", Name = "projects")]
+[Route("users/{userId:guid}/[controller]", Name = "projects")]
 public class ProjectsController : ControllerBase
 {
     private readonly IProjectService _projectService;
@@ -24,7 +24,7 @@ public class ProjectsController : ControllerBase
         return Ok(ApiResponse<IEnumerable<ProjectDto>>.Succeed(projects));
     }
 
-    [HttpGet("{projectId}")]
+    [HttpGet("{projectId:guid}")]
     public async Task<ActionResult<ProjectDto>> GetProjectOfUserById(Guid userId, Guid projectId)
     {
         var project = await _projectService.GetProjectOfUserById(userId, projectId);
@@ -39,14 +39,14 @@ public class ProjectsController : ControllerBase
         return Created("", ApiResponse<ProjectDto>.Succeed(createdProject));
     }
 
-    [HttpPatch]
+    [HttpPatch("{projectId:guid}")]
     public async Task<ActionResult<ProjectDto>> UpdateProject(Guid userId, Guid projectId, [FromBody] ProjectUpdatePatchRequest request)
     {
         var updatedProject = await _projectService.UpdateProjectOfUser(userId, projectId, request);
         return Ok(ApiResponse<ProjectDto>.Succeed(updatedProject));
     }
 
-    [HttpDelete("{projectId}")]
+    [HttpDelete("{projectId:guid}")]
     public async Task<ActionResult<ProjectDto>> DeleteProject(Guid userId, Guid projectId)
     {
         var deletedProject = await _projectService.DeleteProjectOfUser(userId, projectId);

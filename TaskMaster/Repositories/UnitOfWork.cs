@@ -19,5 +19,14 @@ public class UnitOfWork : IUnitOfWork
     public async Task<int> CommitAsync() 
         => await _dbContext.SaveChangesAsync();
 
-    public void Dispose() => _dbContext.Dispose();
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        _dbContext.Dispose();
+    }
 }

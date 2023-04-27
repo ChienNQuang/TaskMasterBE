@@ -24,7 +24,7 @@ public class UsersController : ControllerBase
         return Ok(ApiResponse<IEnumerable<UserDto>>.Succeed(users));
     }
 
-    [HttpGet("{id}", Name = "GetUserById")]
+    [HttpGet("{id:guid}", Name = "GetUserById")]
     public async Task<ActionResult<UserDto>> GetUserById(Guid id)
     {
         var user = await _userService.GetUserById(id);
@@ -39,14 +39,14 @@ public class UsersController : ControllerBase
             ApiResponse<UserDto>.Succeed(addedUser));
     }
 
-    [HttpPut("{id}", Name = "UpdateUser")]
+    [HttpPut("{id:guid}", Name = "UpdateUser")]
     public async Task<ActionResult<UserDto>> UpdateUser(Guid id, [FromBody] UserUpdateRequest request)
     {
-        var updatedUser = await _userService.UpdateUser(request);
+        var updatedUser = await _userService.UpdateUser(id, request);
         return Ok(ApiResponse<UserDto>.Succeed(updatedUser));
     }
 
-    [HttpPost("{id}", Name = "DeactivateUser")]
+    [HttpPost("{id:guid}", Name = "DeactivateUser")]
     public async Task<ActionResult<UserDto>> DeactivateUser(Guid id)
     {
         var deactivatedUser = await _userService.DeactivateUser(id);

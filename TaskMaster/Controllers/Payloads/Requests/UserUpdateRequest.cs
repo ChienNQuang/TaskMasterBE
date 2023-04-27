@@ -1,7 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace TaskMaster.Controllers.Payloads.Requests;
 
-public class UserUpdateRequest
+public record UserUpdateRequest
 {
-    public Guid Id { get; set; }
+    [Required]
     public string Password { get; set; }
 }

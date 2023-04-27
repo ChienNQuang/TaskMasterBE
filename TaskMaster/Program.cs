@@ -15,9 +15,6 @@ try
     app.UseInfrastructure();
     app.MigrateDatabase<TaskMasterContext>((context, _) =>
     {
-        // TaskMasterContextSeed.SeedUserAsync(context, Log.Logger).Wait();
-        // TaskMasterContextSeed.SeedProjectAsync(context, Log.Logger).Wait();
-        // TaskMasterContextSeed.SeedTaskAsync(context, Log.Logger).Wait();
     }).Run();
 }
 catch (Exception ex)

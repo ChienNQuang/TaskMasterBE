@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TaskMaster.Controllers.Payloads.Requests;
 using TaskMaster.Exceptions;
@@ -45,45 +44,61 @@ public class UserService : IUserService
 
     public async Task<UserDto> AddUser(UserCreateRequest request)
     {
-        // add check email later
-        var validator = new UserValidator();
+        var validator = UserCreateRequestValidator.New();
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
-            throw new UserValidationException(validationResult.Errors);
-            // var exceptions = new List<Exception>();
-            // validationResult.Errors.ForEach(vf =>
-            // {
-            //     var item = new Exception(vf.);
-            //     exceptions.Add(item);
-            // });
-            // throw new AggregateException(exceptions);
+            throw new RequestValidationException(validationResult.Errors);
         }
+
+        var duplicatedEntities =
+            _userRepository.FindByCondition(u => u.Email.Equals(request.Email) || u.Username.Equals(request.Username));
+        if (duplicatedEntities.Any())
+        {
+            var duplicated = duplicatedEntities.First();
+            if (duplicated.Username.Equals(request.Username))
+            {
+                throw new UserDuplicateException("Username is already used!");
+            }
+
+            if (duplicated.Email.Equals(request.Email))
+            {
+                throw new UserDuplicateException("Email is already used!");
+            }
+        }
+        
         request.Password = SecurityUtil.Hash(request.Password);
         var userEntityToAdd = _mapper.Map<UserEntity>(request);
         var userEntity = await _userRepository.AddAsync(userEntityToAdd);
         var addResult = await _uow.CommitAsync();
         if (addResult <= 0)
         {
-            throw new ApplicationException("Cannot add user");
+            throw new DbUpdateException("Cannot add user");
         }
         var result = _mapper.Map<UserDto>(userEntity);
         return result;
     }
 
-    public async Task<UserDto> UpdateUser(UserUpdateRequest request)
+    public async Task<UserDto> UpdateUser(Guid id, UserUpdateRequest request)
     {
-        var userEntityToUpdate = await _userRepository.GetByIdAsync(request.Id);
+        var validator = UserUpdateRequestValidator.New();
+        var validationResult = await validator.ValidateAsync(request);
+        if (!validationResult.IsValid)
+        {
+            throw new RequestValidationException(validationResult.Errors);
+        }
+        
+        var userEntityToUpdate = await _userRepository.GetByIdAsync(id);
         if (userEntityToUpdate is null)
         {
-            throw new KeyNotFoundException($"User with id {request.Id} does not exist");
+            throw new KeyNotFoundException($"User with id {id} does not exist");
         }
         userEntityToUpdate.HashedPassword = SecurityUtil.Hash(request.Password);
         var userEntity = _userRepository.Update(userEntityToUpdate);
         var updateResult = await _uow.CommitAsync();
         if (updateResult <= 0)
         {
-            throw new ApplicationException("Cannot update user");
+            throw new DbUpdateException("Cannot update user");
         }
         var result = _mapper.Map<UserDto>(userEntity);
         return result;
@@ -101,7 +116,7 @@ public class UserService : IUserService
         var updateResult = await _uow.CommitAsync();
         if (updateResult <= 0)
         {
-            throw new ApplicationException("Cannot deactivate user");
+            throw new DbUpdateException("Cannot deactivate user");
         }
         var result = _mapper.Map<UserDto>(userEntity);
         return result;
