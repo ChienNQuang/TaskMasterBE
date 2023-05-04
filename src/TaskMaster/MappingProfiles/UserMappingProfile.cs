@@ -14,12 +14,14 @@ public class UserMappingProfile : Profile
         CreateMap<UserEntity, UserDto>()
             .ForMember(dest => dest.CreationDate,
                 opt => opt.MapFrom(src => src.CreationDate.ToDateOnly()));
-        CreateMap<UserDto, UserEntity>()
-            .ForMember(dest => dest.CreationDate, 
-                opt => opt.MapFrom(src => LocalDate.FromDateOnly(src.CreationDate)));
         CreateMap<UserCreateRequest, UserEntity>()
-            .ForMember(u => u.HashedPassword, options =>
-                options.MapFrom(src => src.Password));
-        CreateMap<UserUpdateRequest, UserEntity>();
+            .ForMember(u => u.HashedPassword, 
+                opt => opt.MapFrom(src => src.Password))
+            .ForMember(u => u.Active, 
+                opt => opt.MapFrom(src => true))
+            .ForMember(u => u.CreationDate, 
+                opt => opt.MapFrom(src => SystemClock.Instance.GetCurrentInstant().InUtc().Date))
+            .ForMember(u => u.Id, 
+                opt => opt.MapFrom(src => Guid.Empty));
     }
 }

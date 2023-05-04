@@ -9,6 +9,6 @@ public class UserEntity : Entity<Guid>
     public string Email { get; set; }
     public string Username { get; set; }
     public string HashedPassword { get; set; }
-    public bool Active { get; set; } = true;
-    public LocalDate CreationDate { get; set; } = SystemClock.Instance.GetCurrentInstant().InUtc().Date;
+    public bool Active { get; set; }
+    public LocalDate CreationDate { get; set; }
 }

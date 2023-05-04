@@ -7,7 +7,7 @@
 
         <IsPackable>false</IsPackable>
 
-        <RootNamespace>TaskMaster.Tests.Unit.Application</RootNamespace>
+        <RootNamespace>TaskMaster.Tests.Unit.Api</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

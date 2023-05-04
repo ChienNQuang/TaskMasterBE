@@ -56,6 +56,10 @@ public class ProjectService : IProjectService
             throw new ArgumentException(
                 "The request was invalid because one or more properties were not correctly formatted");
         }
+        if (request.OwnerId != userId)
+        {
+            throw new ArgumentException("Owner id not match user id");
+        }
         var validator = ProjectCreateRequestValidator.New();
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
